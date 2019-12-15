@@ -3,3 +3,6 @@ db:
   user: root
   password: 1234
   schema: burki
+
+jwt:
+  secret: jnk1nm12nfıo1

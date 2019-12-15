@@ -1,14 +1,16 @@
 package models
 
+import "github.com/dgrijalva/jwt-go"
+
 type User struct {
-	Id      int    `db:"ID"`
-	Name    string `json:"name" db:"NAME"`
-	Surname string `json:"surname" db:"SURNAME"`
+	Id       int    `db:"ID"`
+	Name     string `json:"name" db:"NAME"`
+	Surname  string `json:"surname" db:"SURNAME"`
+	Password string `json:"password" db:"PASSWORD"`
+	Email    string `json:"email" db:"EMAIL"`
 }
 
-type UserService interface {
-	User(id int) (*User, error)
-	Users() ([]*User, error)
-	CreateUser(user *User) (*User, error)
-	DeleteUser(id int) error
+type JwtClaims struct {
+	Email string `json:"email"`
+	jwt.StandardClaims
 }

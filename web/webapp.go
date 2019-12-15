@@ -8,6 +8,8 @@ import (
 func RegisterHandlers() {
 	e := echo.New()
 
+	e.POST("/login", loginHandler)
+
 	e.GET("/user", getAllUserHandler)
 	e.GET("/user/:id", getUserHandler)
 	e.POST("/user", postUserHandler)
