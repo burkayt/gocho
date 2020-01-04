@@ -8,25 +8,38 @@ import (
 	"log"
 )
 
-type dbConfig struct {
+type DbConfig struct {
 	Host     string `mapstructure:"host"`
 	User     string `mapstructure:"user"`
 	Password string `mapstructure:"password"`
 	Schema   string `mapstructure:"schema"`
 }
 
-var db *sqlx.DB
+type SqlxDatabase struct {
+	db     *sqlx.DB
+	config DbConfig
+}
 
-func InitDb() {
-	config := dbConfig{}
-	err := viper.UnmarshalKey("db", &config)
-	if err != nil {
-		log.Fatal(err)
-	}
+type Database interface {
+	Connect() *sqlx.DB
+	GetConnection() *sqlx.DB
+}
 
-	datasource := config.getDatasource()
+func NewSqlxDatabase(config DbConfig) Database {
+	database := SqlxDatabase{config: config}
+	database.db = database.Connect()
+	return &database
 
-	db, err = sqlx.Connect("mysql", datasource)
+}
+
+func (database SqlxDatabase) GetConnection() *sqlx.DB {
+	return database.db
+}
+
+func (database SqlxDatabase) Connect() *sqlx.DB {
+	datasource := database.config.getDatasource()
+
+	db, err := sqlx.Connect("mysql", datasource)
 
 	if err != nil {
 		log.Fatal(err)
@@ -35,9 +48,21 @@ func InitDb() {
 	if err = db.Ping(); err != nil {
 		log.Fatal(err)
 	}
+
+	return db
 }
 
-func (config dbConfig) getDatasource() string {
+func GetDbConfig() DbConfig {
+	config := DbConfig{}
+	err := viper.UnmarshalKey("db", &config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return config
+}
+
+func (config DbConfig) getDatasource() string {
 	var datasource bytes.Buffer
 	datasource.WriteString(config.User)
 	datasource.WriteString(":")

@@ -8,12 +8,14 @@ import (
 func RegisterHandlers() {
 	e := echo.New()
 
-	e.POST("/login", loginHandler)
+	userHandler := CreateUserHandler()
 
-	e.GET("/user", getAllUserHandler)
-	e.GET("/user/:id", getUserHandler)
-	e.POST("/user", postUserHandler)
-	e.DELETE("/user/:id", deleteUserHandler)
+	e.POST("/login", userHandler.loginHandler)
+
+	e.GET("/user", userHandler.getAllUserHandler)
+	e.GET("/user/:id", userHandler.getUserHandler)
+	e.POST("/user", userHandler.postUserHandler)
+	e.DELETE("/user/:id", userHandler.deleteUserHandler)
 
 	log.Fatal(e.Start(":8080"))
 }

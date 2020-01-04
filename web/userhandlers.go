@@ -5,12 +5,19 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/common/log"
 	"gocho/models"
-	"gocho/services"
 	"net/http"
 	"strconv"
 )
 
-func deleteUserHandler(c echo.Context) error {
+type UserHandler struct {
+	userService models.UserService
+}
+
+func NewUserHandler(service models.UserService) *UserHandler {
+	return &UserHandler{service}
+}
+
+func (userHandler *UserHandler) deleteUserHandler(c echo.Context) error {
 	param := c.Param("id")
 
 	userId, err := strconv.Atoi(param)
@@ -18,7 +25,7 @@ func deleteUserHandler(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err)
 	}
 
-	err = services.DeleteUser(userId)
+	err = userHandler.userService.DeleteUser(userId)
 
 	if err != nil {
 		log.Error(err)
@@ -29,14 +36,14 @@ func deleteUserHandler(c echo.Context) error {
 
 }
 
-func getUserHandler(c echo.Context) error {
+func (userHandler *UserHandler) getUserHandler(c echo.Context) error {
 	param := c.Param("id")
 
 	userId, err := strconv.Atoi(param)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
 	}
-	user, err := services.User(userId)
+	user, err := userHandler.userService.User(userId)
 
 	if err != nil {
 		log.Error(err)
@@ -46,24 +53,25 @@ func getUserHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, user)
 }
 
-func getAllUserHandler(c echo.Context) error {
-	users, err := services.Users()
+func (userHandler *UserHandler) getAllUserHandler(c echo.Context) error {
+	users, err := userHandler.userService.Users()
 
 	if err != nil {
+		log.Error(err)
 		return c.JSON(http.StatusInternalServerError, "")
 	}
 
 	return c.JSON(http.StatusOK, users)
 }
 
-func postUserHandler(c echo.Context) error {
+func (userHandler *UserHandler) postUserHandler(c echo.Context) error {
 	var user models.User
 
 	if err := c.Bind(&user); err != nil {
 		return c.JSON(http.StatusBadRequest, err)
 	}
 
-	_, err := services.CreateUser(&user)
+	_, err := userHandler.userService.CreateUser(&user)
 
 	if err != nil {
 		log.Error(err)
@@ -73,7 +81,7 @@ func postUserHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, user)
 }
 
-func loginHandler(c echo.Context) error {
+func (userHandler *UserHandler) loginHandler(c echo.Context) error {
 	var user models.User
 
 	if err := c.Bind(&user); err != nil {
@@ -84,7 +92,7 @@ func loginHandler(c echo.Context) error {
 		return errors.New("Email and Password is mandatory")
 	}
 
-	token, err := services.Login(&user)
+	token, err := userHandler.userService.Login(&user)
 
 	if err != nil {
 		log.Error(err)

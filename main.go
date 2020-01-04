@@ -3,14 +3,12 @@ package main
 import (
 	"flag"
 	"github.com/spf13/viper"
-	"gocho/dao"
 	"gocho/web"
 	"log"
 )
 
 func main() {
 	readConfig()
-	dao.InitDb()
 	web.RegisterHandlers()
 }
 

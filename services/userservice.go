@@ -4,32 +4,39 @@ import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/spf13/viper"
-	"gocho/dao"
 	"gocho/models"
 )
 
-func User(id int) (*models.User, error) {
-	return dao.User(id)
+type UserService struct {
+	userDao models.UserDao
 }
 
-func Users() ([]*models.User, error) {
-	return dao.Users()
+func NewUserService(userDao models.UserDao) models.UserService {
+	return &UserService{userDao}
 }
 
-func CreateUser(user *models.User) (*models.User, error) {
+func (u *UserService) User(id int) (*models.User, error) {
+	return u.userDao.User(id)
+}
+
+func (u *UserService) Users() ([]*models.User, error) {
+	return u.userDao.Users()
+}
+
+func (u *UserService) CreateUser(user *models.User) (*models.User, error) {
 	//TODO bcrypt password
-	return dao.CreateUser(user)
+	return u.userDao.CreateUser(user)
 
 }
 
-func DeleteUser(id int) error {
-	return dao.DeleteUser(id)
+func (u *UserService) DeleteUser(id int) error {
+	return u.userDao.DeleteUser(id)
 }
 
-func Login(user *models.User) (string, error) {
+func (u *UserService) Login(user *models.User) (string, error) {
 	secret := viper.GetString("jwt.secret")
 
-	foundUser, err := dao.FindUserByEmail(user.Email)
+	foundUser, err := u.userDao.FindUserByEmail(user.Email)
 
 	if err != nil {
 		return "", err
