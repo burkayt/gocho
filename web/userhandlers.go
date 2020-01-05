@@ -45,12 +45,16 @@ func (userHandler *UserHandler) getUserHandler(c echo.Context) error {
 	}
 	user, err := userHandler.userService.User(userId)
 
-	if err != nil {
-		log.Error(err)
-		return err
+	if err == nil {
+		return c.JSON(http.StatusOK, user)
 	}
 
-	return c.JSON(http.StatusOK, user)
+	if user != nil && user.Id == 0 {
+		return c.NoContent(http.StatusNotFound)
+	}
+
+	log.Error(err)
+	return err
 }
 
 func (userHandler *UserHandler) getAllUserHandler(c echo.Context) error {
@@ -58,7 +62,7 @@ func (userHandler *UserHandler) getAllUserHandler(c echo.Context) error {
 
 	if err != nil {
 		log.Error(err)
-		return c.JSON(http.StatusInternalServerError, "")
+		return c.NoContent(http.StatusInternalServerError)
 	}
 
 	return c.JSON(http.StatusOK, users)
@@ -78,7 +82,7 @@ func (userHandler *UserHandler) postUserHandler(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, user)
+	return c.JSON(http.StatusCreated, user)
 }
 
 func (userHandler *UserHandler) loginHandler(c echo.Context) error {
