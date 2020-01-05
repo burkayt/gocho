@@ -6,6 +6,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/spf13/viper"
 	"log"
+	"sync"
 )
 
 type DbConfig struct {
@@ -25,11 +26,20 @@ type Database interface {
 	GetConnection() *sqlx.DB
 }
 
-func NewSqlxDatabase(config DbConfig) Database {
-	database := SqlxDatabase{config: config}
-	database.db = database.Connect()
-	return &database
+var (
+	connection Database
+	once       sync.Once
+)
 
+func NewSqlxDatabase(config DbConfig) Database {
+	once.Do(
+		func() {
+			database := SqlxDatabase{config: config}
+			database.db = database.Connect()
+			connection = database
+		})
+
+	return connection
 }
 
 func (database SqlxDatabase) GetConnection() *sqlx.DB {
